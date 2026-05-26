@@ -10,7 +10,7 @@ export async function fetchStream(url, data, onChunk, onComplete, onError) {
   const signal = controller.signal;
   try {
     //发送请求
-    const response = await fetch(`http://127.0.0.1:80/api/travel/${url}`, {
+    const response = await fetch(`https://wyj-travel-assistant-sever2-262567-8-1437172584.sh.run.tcloudbase.com/api/travel/${url}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
