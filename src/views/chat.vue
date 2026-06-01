@@ -110,6 +110,7 @@ const addUserMessage = (content) => {
   });
 };
 //获取AI响应
+// 获取AI响应
 const fetchAIResponse = async (Usermsg) => {
   isStreaming.value = true;
   messages.value.push({
@@ -121,9 +122,7 @@ const fetchAIResponse = async (Usermsg) => {
   let fullResponse = "";
   fetchStream(
     "chat",
-    {
-      message: Usermsg,
-    },
+    { message: Usermsg },
     (chunk) => {
       //将AI回复的消息添加进入消息列表
       fullResponse += chunk;
@@ -136,13 +135,17 @@ const fetchAIResponse = async (Usermsg) => {
       isStreaming.value = false;
     },
     (errMsg) => {
+      console.warn("流提示：", errMsg);
+      
       const lastMsg = messages.value[messages.value.length - 1];
-      if (lastMsg && lastMsg.role === "ai") {
-        lastMsg.content = `抱歉，AI发生错误:${errMsg}`;
+      // 只有完全没有收到内容时才提示错误
+      if (lastMsg && lastMsg.role === "ai" && !fullResponse) {
+        lastMsg.content = "网络异常，请重试";
+        showToast("网络异常，请重试");
       }
+      
       isStreaming.value = false;
-      showToast("AI回复失败");
-    },
+    }
   );
 };
 const route = useRoute();
