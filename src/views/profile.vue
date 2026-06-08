@@ -1,23 +1,15 @@
 <template>
   <div class="page-container profile-page">
     <div class="page-header">
-      <van-nav-bar
-        fixed
-        title="我的"
-        placeholder
-      />
+      <van-nav-bar fixed title="我的" placeholder />
     </div>
-    
+
     <div class="page-content">
       <!-- 用户信息区域 -->
       <div class="user-info-card">
         <div class="avatar-section">
           <div class="avatar">
-            <!-- <img 
-              src="https://neeko-copilot.bytedance.net/api/text2image?prompt=cute%20cartoon%20cat%20avatar%20portrait%20friendly%20smile&image_size=square" 
-              alt="游客头像" 
-              class="avatar-img"
-            /> -->
+            <van-icon name="friends-o" size="80" />
           </div>
           <div class="user-details">
             <div class="username">游客</div>
@@ -47,9 +39,9 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRouter } from "vue-router";
 
-const router = useRouter()
+const router = useRouter();
 </script>
 
 <style scoped>
@@ -83,7 +75,7 @@ const router = useRouter()
   height: 80px;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid rgba(255, 255, 255, 0.5);
+  border: 3px solid rgba(0, 0, 0, 0.5);
 }
 
 .avatar-img {

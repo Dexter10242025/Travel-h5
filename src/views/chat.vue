@@ -12,46 +12,57 @@
     </div>
     <div class="page-content">
       <div v-if="messages.length === 0" class="chat-empty">
-        <van-empty description="开始和AI助手对话吧" />
+        <div class="empty-avatar">
+          <van-icon name="robot" size="64" />
+        </div>
+        <div class="empty-title">AI旅游助手</div>
+        <div class="empty-desc">开始和AI助手对话吧</div>
         <div class="quick-questions">
           <div class="quick-title">常见问题</div>
-          <van-tag
-            v-for="question in quickQuestions"
-            :key="question"
-            size="large"
-            mark
-            class="quick-tag"
-            @click="handleClick(question)"
-            >{{ question }}</van-tag
-          >
+          <div class="quick-tags">
+            <van-tag
+              v-for="question in quickQuestions"
+              :key="question"
+              size="large"
+              class="quick-tag"
+              @click="handleClick(question)"
+              >{{ question }}</van-tag
+            >
+          </div>
         </div>
       </div>
       <div v-else class="message-list">
+        <!-- 每一条用户消息和AI消息都会渲染一个ChatBubble组件 -->
         <ChatBubble v-for="msg in messages" :key="msg.id" :message="msg" />
         <div class="streaming-indicator" v-if="isStreaming">
-          <van-loading type="spinner" size="20px" />
+          <div class="thinking-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
           <span>AI助手正在思考中...</span>
         </div>
       </div>
     </div>
     <div class="chat-input-area">
-      <van-field
-        v-model="inputValue"
-        placeholder="输入您的问题"
-        :disabled="isStreaming"
-        @keyup.enter="sendMessage"
-      >
-        <template #button>
-          <van-button
-            @click="sendMessage"
-            type="primary"
-            size="medium"
-            :disabled="!inputValue.trim()"
-          >
-            发送
-          </van-button>
-        </template>
-      </van-field>
+      <div class="input-wrapper">
+        <van-field
+          v-model="inputValue"
+          placeholder="输入您的问题"
+          :disabled="isStreaming"
+          @keyup.enter="sendMessage"
+        />
+        <van-button
+          @click="sendMessage"
+          type="primary"
+          size="medium"
+          :disabled="!inputValue.trim() || isStreaming"
+          class="send-btn"
+        >
+          <van-icon name="upgrade" size="60" />
+          <!-- 发送 -->
+        </van-button>
+      </div>
     </div>
   </div>
 </template>
@@ -66,31 +77,26 @@ import ChatBubble from "../components/ChatBubble.vue";
 const router = useRouter();
 
 let title = ref("AI旅游助手");
-//会话数据
 let messages = ref([]);
-//输入框数据
 let inputValue = ref("");
 
-//常见问题
 let quickQuestions = ref([
   "北京三日游",
   "上海景点推荐",
   "广州美食推荐",
   "湖南景点推荐",
 ]);
-//AI处理中的状态
 let isStreaming = ref(false);
-//返回按钮
+
 const onBack = () => {
   router.back();
 };
-//点击常见问题
+
 const handleClick = (question) => {
   inputValue.value = question;
   sendMessage();
 };
 
-//发送消息
 const sendMessage = () => {
   const msg = inputValue.value.trim();
   if (!msg || isStreaming.value) {
@@ -100,7 +106,7 @@ const sendMessage = () => {
   inputValue.value = "";
   fetchAIResponse(msg);
 };
-//将用户发送的消息添加进消息列表
+
 const addUserMessage = (content) => {
   messages.value.push({
     id: Date.now(),
@@ -109,8 +115,7 @@ const addUserMessage = (content) => {
     timestamp: new Date().toISOString(),
   });
 };
-//获取AI响应
-// 获取AI响应
+
 const fetchAIResponse = async (Usermsg) => {
   isStreaming.value = true;
   messages.value.push({
@@ -124,7 +129,6 @@ const fetchAIResponse = async (Usermsg) => {
     "chat",
     { message: Usermsg },
     (chunk) => {
-      //将AI回复的消息添加进入消息列表
       fullResponse += chunk;
       const lastMsg = messages.value[messages.value.length - 1];
       if (lastMsg && lastMsg.role === "ai") {
@@ -136,114 +140,242 @@ const fetchAIResponse = async (Usermsg) => {
     },
     (errMsg) => {
       console.warn("流提示：", errMsg);
-      
+
       const lastMsg = messages.value[messages.value.length - 1];
-      // 只有完全没有收到内容时才提示错误
       if (lastMsg && lastMsg.role === "ai" && !fullResponse) {
         lastMsg.content = "网络异常，请重试";
         showToast("网络异常，请重试");
       }
-      
+
       isStreaming.value = false;
-    }
+    },
   );
 };
+
 const route = useRoute();
 onMounted(() => {
-  if (route.query.scheme === 'detail' && route.query.city) {
+  if (route.query.scheme === "detail" && route.query.city) {
     inputValue.value = `我想了解一下${route.query.city}的旅游规划`;
   }
 });
 </script>
 
 <style scoped>
-/* 页面整体容器：弹性布局，固定占满屏幕 */
 .page-container {
-  height: 95vh;
-  background-color: #f5f5f5;
+  min-height: 90vh;
+  background: linear-gradient(180deg, #f0f4ff 0%, #faf5ff 50%, #f5f3ff 100%);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-/* 中间聊天内容区域：自动占剩余空间，独立滚动 */
 .page-content {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 14px 12px;
-  padding-top: 35px;
+  /* padding: 14px 12px; */
+  padding-top: 15px;
   box-sizing: border-box;
 }
 
-/* 空状态居中样式 */
 .chat-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 65vh;
-  gap: 40px;
+  min-height: 60vh;
+  gap: 16px;
 }
 
-/* 快捷问题区域 */
+.empty-avatar {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #5a6eff 0%, #a855f7 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(90, 110, 255, 0.3);
+  margin-bottom: 8px;
+}
+
+.empty-avatar :deep(.van-icon) {
+  color: #fff;
+}
+
+.empty-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-top: 8px;
+}
+
+.empty-desc {
+  font-size: 14px;
+  color: #64748b;
+}
+
 .quick-questions {
   width: 100%;
   padding: 0 16px;
-  text-align: center;
-}
-.quick-title {
-  font-size: 16px;
-  color: #888;
-  margin-bottom: 24px;
-}
-.quick-tag {
-  margin: 8px 6px;
-  background-color: #999 !important;
-  border: none !important;
-  color: #fff !important;
-  border-radius: 20px !important;
-  padding: 4px 16px !important;
+  margin-top: 32px;
 }
 
-/* 消息列表 */
-.message-list {
+.quick-title {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.quick-tags {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 12px;
 }
 
-/* AI思考中加载指示器 */
+.quick-tag {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(90, 110, 255, 0.2) !important;
+  color: #5a6eff !important;
+  border-radius: 24px !important;
+  padding: 10px 20px !important;
+  font-size: 14px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.3s ease !important;
+}
+
+.quick-tag:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+
+.message-list {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 160px;
+  gap: 16px;
+}
+
 .streaming-indicator {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   font-size: 14px;
-  color: #909399;
-  padding: 8px 4px;
-  margin-left: 4px;
+  color: #64748b;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  margin: 8px 0;
+  width: fit-content;
 }
 
-/* 底部输入区域：固定高度，永久显示 */
+.thinking-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.thinking-dots .dot {
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, #5a6eff 0%, #a855f7 100%);
+  border-radius: 50%;
+  animation: dotPulse 1.4s infinite ease-in-out;
+}
+
+.thinking-dots .dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.thinking-dots .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.thinking-dots .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dotPulse {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .chat-input-area {
-  flex-shrink: 0; /* 禁止被压缩 */
-  background: #fff;
-  border-top: 1px solid #eee;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 50px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(248, 250, 252, 0.98) 100%
+  );
+  backdrop-filter: blur(20px);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
   padding: 12px 16px;
-  box-sizing: border-box;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  z-index: 99;
 }
 
-/* 深度修改 vant 输入框和按钮样式 */
-:deep(.van-field) {
-  background-color: #f5f7fa;
-  /* border-radius: 24px; */
-  padding: 0 12px;
+.input-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
-:deep(.van-field__body) {
-  padding: 0 8px;
+
+.input-wrapper :deep(.van-field) {
+  flex: 1;
+  background: rgba(241, 245, 249, 0.8);
+  border-radius: 20px;
+  padding: 12px 16px;
+  border: 1px solid rgba(90, 110, 255, 0.1);
 }
-:deep(.van-button--primary) {
-  /* border-radius: 20px; */
-  padding: 0 16px;
+
+.input-wrapper :deep(.van-field__body) {
+  padding: 0;
+}
+
+.input-wrapper :deep(.van-field__control) {
+  font-size: 15px;
+}
+
+.send-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  padding: 0;
+  background: linear-gradient(135deg, #5a6eff 0%, #a855f7 50%, #ec4899 100%);
+  border: none;
+  box-shadow: 0 8px 24px rgba(90, 110, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.send-btn:active {
+  transform: scale(0.92);
+  box-shadow: 0 4px 12px rgba(90, 110, 255, 0.3);
+}
+
+.send-btn:not(:disabled) :deep(.van-icon) {
+  color: #fff;
+}
+
+.send-btn:disabled {
+  background: #cbd5e1;
+  box-shadow: none;
 }
 </style>

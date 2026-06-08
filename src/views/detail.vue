@@ -13,13 +13,19 @@
     <div class="page-content">
       <!-- loading效果 -->
       <div class="loading-container" v-if="isLoading">
-        <van-loading size="30px" vertical type="spinner">
-          行程规划中...
-        </van-loading>
+        <div class="loading-wrapper">
+          <van-loading size="36px" vertical type="spinner" color="#5a6eff">
+            行程规划中...
+          </van-loading>
+        </div>
       </div>
       <div v-else-if="errorMsg">
         <van-empty :description="errorMsg">
-          <van-button type="primary" @click="travelRecommendData">
+          <van-button
+            type="primary"
+            @click="travelRecommendData"
+            class="retry-button"
+          >
             重试
           </van-button>
         </van-empty>
@@ -28,29 +34,46 @@
       <template v-else-if="tripData && tripData.success !== false">
         <div class="card overview-card">
           <div class="trip-header">
-            <h2>{{ tripData.city }} · {{ tripData.days }}天行程</h2>
-            <span class="budget-text">预算:¥{{ tripData.totalBudget }}</span>
+            <div class="trip-info">
+              <h2 class="trip-title">
+                {{ tripData.city }} · {{ tripData.days }}天行程
+              </h2>
+              <p class="trip-subtitle">智能规划您的完美旅程</p>
+            </div>
+            <div class="budget-badge">
+              <van-icon name="gold-coin-o" size="20" />
+              <span class="budget-text">¥{{ tripData.totalBudget }}</span>
+            </div>
           </div>
         </div>
 
-        <van-collapse v-model="activeNames">
+        <van-collapse v-model="activeNames" class="custom-collapse">
           <van-collapse-item
             v-for="day in tripData.dailyItinerary"
             :key="day.day"
             :title="'第' + day.day + '天'"
             :name="day.day"
           >
-            <div class="day-scheaule">
-              <div class="scheaule-section">
-                <div class="section-label morning">上午</div>
+            <div class="day-schedule">
+              <div class="schedule-section">
+                <div class="section-label morning">
+                  <van-icon name="sun-o" size="16" />
+                  上午
+                </div>
                 <SpotItem :data="day.morning" />
               </div>
-              <div class="scheaule-section">
-                <div class="section-label afternoon">下午</div>
+              <div class="schedule-section">
+                <div class="section-label afternoon">
+                  <van-icon name="sun" size="16" />
+                  下午
+                </div>
                 <SpotItem :data="day.afternoon" />
               </div>
-              <div class="scheaule-section">
-                <div class="section-label evening">晚上</div>
+              <div class="schedule-section">
+                <div class="section-label evening">
+                  <van-icon name="moon-o" size="16" />
+                  晚上
+                </div>
                 <SpotItem :data="day.evening" />
               </div>
             </div>
@@ -59,7 +82,12 @@
 
         <!-- 预算明细 -->
         <div class="card budget-card" v-if="tripData.budgetBreakdown">
-          <div class="section-title">预算明细</div>
+          <div class="card-header">
+            <div class="section-title">
+              <van-icon name="chart-trending-o" size="20" class="title-icon" />
+              预算明细
+            </div>
+          </div>
           <BudgetTable
             :data="tripData.budgetBreakdown"
             :total="tripData.totalBudget"
@@ -71,9 +99,15 @@
           class="card tips-card"
           v-if="tripData.tips && tripData.tips.length"
         >
-          <div class="section-title">温馨提示</div>
+          <div class="card-header">
+            <div class="section-title">
+              <van-icon name="info-o" size="20" class="title-icon" />
+              温馨提示
+            </div>
+          </div>
           <ul class="tips-list">
             <li v-for="(tip, index) in tripData.tips" :key="index">
+              <van-icon name="check" size="16" class="tip-icon" />
               {{ tip }}
             </li>
           </ul>
@@ -84,9 +118,19 @@
           class="card warnings-card"
           v-if="tripData.warnings && tripData.warnings.length"
         >
-          <div class="section-title">注意事项</div>
+          <div class="card-header">
+            <div class="section-title warning-title">
+              <van-icon name="warning-o" size="20" class="title-icon" />
+              注意事项
+            </div>
+          </div>
           <ul class="tips-list">
             <li v-for="(warning, index) in tripData.warnings" :key="index">
+              <van-icon
+                name="warning"
+                size="16"
+                class="tip-icon warning-icon"
+              />
               {{ warning }}
             </li>
           </ul>
@@ -95,9 +139,16 @@
     </div>
 
     <div class="detail-footer" v-if="tripData && tripData.success !== false">
-      <van-button type="primary" size="large" round @click="goToChat"
-        >咨讯AI助手</van-button
+      <van-button
+        type="primary"
+        size="large"
+        round
+        @click="goToChat"
+        class="chat-button"
       >
+        <van-icon name="chat-o" size="18" />
+        咨询AI助手
+      </van-button>
     </div>
   </div>
 </template>
@@ -209,72 +260,194 @@ let travelRecommendData = async () => {
 <style scoped>
 .page-container {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background: linear-gradient(180deg, #f0f4ff 0%, #faf5ff 50%, #f5f3ff 100%);
 }
+
 .page-content {
   padding: 16px;
+  padding-bottom: 90px;
 }
+
 .loading-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 400px;
 }
-.card {
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin-bottom: 16px;
-  padding: 20px 16px;
+
+.loading-wrapper {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 40px 60px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
 }
+
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  margin-bottom: 20px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-icon {
+  background: linear-gradient(135deg, #5a6eff 0%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.warning-title {
+  color: #f43f5e;
+}
+
+.warning-title .title-icon {
+  background: linear-gradient(135deg, #f43f5e 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.overview-card {
+  background: linear-gradient(135deg, #5a6eff 0%, #a855f7 50%, #ec4899 100%);
+  border: none;
+  padding: 24px;
+}
+
 .trip-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-.trip-header h2 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 600;
-}
-.budget-text {
-  font-size: 18px;
-  color: #e64340;
-  font-weight: 600;
+  gap: 16px;
 }
 
-.day-scheaule {
+.trip-info {
+  flex: 1;
+}
+
+.trip-title {
+  margin: 0 0 8px 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.trip-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.budget-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 12px 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.budget-badge :deep(.van-icon) {
+  color: #ffd700;
+}
+
+.budget-text {
+  font-size: 20px;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.custom-collapse {
+  background: transparent;
+}
+
+.custom-collapse :deep(.van-collapse-item) {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+}
+
+.custom-collapse :deep(.van-collapse-item__title) {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  padding: 20px 24px;
+}
+
+.custom-collapse :deep(.van-collapse-item__content) {
+  padding: 0 24px 20px;
+}
+
+.custom-collapse :deep(.van-icon-arrow) {
+  color: #5a6eff;
+}
+
+.day-schedule {
   padding: 8px 0;
 }
-.scheaule-section {
-  margin-bottom: 12px;
+
+.schedule-section {
+  margin-bottom: 16px;
 }
+
 .section-label {
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 12px;
   color: #fff;
   font-size: 14px;
-  margin-bottom: 8px;
-  display: inline-block;
-}
-.section-label.morning {
-  background-color: #409eff;
-}
-.section-label.afternoon {
-  background-color: #ff9500;
-}
-.section-label.evening {
-  background-color: #722ed1;
-}
-.budget-card{
-  margin-top: 16px;
-}
-.section-title {
-  font-size: 18px;
   font-weight: 600;
   margin-bottom: 12px;
-  padding-bottom: 6px;
-  border-bottom: 2px solid #ffd180;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.section-label :deep(.van-icon) {
+  color: #fff;
+}
+
+.section-label.morning {
+  background: linear-gradient(135deg, #5a6eff 0%, #7c3aed 100%);
+}
+
+.section-label.afternoon {
+  background: linear-gradient(135deg, #ff9500 0%, #ff6b00 100%);
+}
+
+.section-label.evening {
+  background: linear-gradient(135deg, #722ed1 0%, #9254de 100%);
+}
+
+.budget-card {
+  margin-top: 0;
 }
 
 .tips-list {
@@ -282,28 +455,79 @@ let travelRecommendData = async () => {
   padding: 0;
   list-style: none;
 }
+
 .tips-list li {
   font-size: 14px;
   line-height: 1.8;
-  color: #333;
-  margin-bottom: 10px;
+  color: #475569;
+  margin-bottom: 12px;
   text-align: justify;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
 }
 
-/* 底部固定按钮，和导航栏一样吸底悬浮 */
+.tip-icon {
+  color: #10b981;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.warning-icon {
+  color: #f43f5e;
+}
+
+.retry-button {
+  background: linear-gradient(135deg, #5a6eff 0%, #a855f7 100%);
+  border: none;
+  border-radius: 16px;
+  height: 44px;
+  font-weight: 600;
+}
+
 .detail-footer {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 10px 16px;
-  background: #fff;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-  z-index: 99; /* 保证在最上层 */
+  padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(248, 250, 252, 0.98) 100%
+  );
+  backdrop-filter: blur(20px);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  z-index: 99;
 }
 
-/* 给页面底部留出按钮高度，防止内容被挡住 */
-.page-content {
-  padding-bottom: 70px !important;
+.chat-button {
+  background: linear-gradient(135deg, #5a6eff 0%, #a855f7 50%, #ec4899 100%);
+  border: none;
+  height: 48px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(90, 110, 255, 0.4);
+  transition: all 0.3s ease;
+}
+
+.chat-button:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 12px rgba(90, 110, 255, 0.3);
+}
+
+.chat-button :deep(.van-button__text) {
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.chat-button :deep(.van-icon) {
+  color: #fff;
 }
 </style>
