@@ -18,6 +18,14 @@ export async function fetchStream(url, data, onChunk, onComplete, onError) {
       body: JSON.stringify(data),
       signal,
     });
+    // const response = await fetch(`http://localhost:80/api/travel/${url}`, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(data),
+    //   signal,
+    // });
     //获取响应体的可读流读取器
     const reader = response.body.getReader();
     //将二进制数据解码为字符串

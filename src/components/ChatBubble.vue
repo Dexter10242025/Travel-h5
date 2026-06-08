@@ -7,7 +7,14 @@
 
     <div class="message-wrapper">
       <div class="bubble-content">
-        <div class="message-text">{{ message.content }}</div>
+        <div class="message-text" v-if="message.role === 'user'">
+          {{ message.content }}
+        </div>
+        <div
+          class="message-text ai-message"
+          v-else
+          v-html="renderedContent"
+        ></div>
       </div>
       <div class="message-time" v-if="showTime">
         {{ formatTime }}
@@ -23,6 +30,12 @@
 
 <script setup>
 import { computed } from "vue";
+import MarkdownIt from "markdown-it";
+
+const md = new MarkdownIt({
+  breaks: true,
+  linkify: true,
+});
 
 const props = defineProps({
   message: {
@@ -43,6 +56,11 @@ const formatTime = computed(() => {
   if (!props.message.timestamp) return "";
   const date = new Date(props.message.timestamp);
   return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+});
+
+const renderedContent = computed(() => {
+  if (!props.message.content) return "";
+  return md.render(props.message.content);
 });
 </script>
 
@@ -74,6 +92,7 @@ const formatTime = computed(() => {
 .ai-message-wrap {
   align-self: flex-start;
 }
+
 .message-wrapper {
   display: flex;
   flex-direction: column;
@@ -98,9 +117,82 @@ const formatTime = computed(() => {
 }
 
 .message-text {
-  line-height: 1.5;
+  line-height: 1.6;
   font-size: 14px;
-  word-break: break-all;
+  word-break: break-word;
+}
+
+.ai-message {
+  white-space: pre-wrap;
+}
+
+.ai-message p {
+  margin: 0 0 12px 0;
+}
+
+.ai-message p:last-child {
+  margin-bottom: 0;
+}
+
+.ai-message ul,
+.ai-message ol {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.ai-message li {
+  margin-bottom: 6px;
+  line-height: 1.6;
+}
+
+.ai-message li:last-child {
+  margin-bottom: 0;
+}
+
+.ai-message strong {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.ai-message em {
+  font-style: italic;
+}
+
+.ai-message code {
+  background-color: #f1f5f9;
+  color: #e11d48;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: monospace;
+}
+
+.ai-message pre {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.ai-message pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.ai-message blockquote {
+  border-left: 3px solid #5a6eff;
+  padding-left: 12px;
+  margin: 8px 0;
+  color: #64748b;
+  font-style: italic;
+}
+
+.ai-message a {
+  color: #5a6eff;
+  text-decoration: underline;
 }
 
 .message-time {
